@@ -13,7 +13,6 @@ class NumbersDataHelper: NSObject {
     static let sharedInstance = NumbersDataHelper()
     
     let coreDataHelper = CoreDataHelper.sharedInstance
-    lazy var numbersNetworkHelper = NumbersNetworkHelper.sharedInstance
     
     private override init() {
         super.init()
@@ -23,10 +22,10 @@ class NumbersDataHelper: NSObject {
         
         let numberModels = coreDataHelper.retrieveAllNumbers()
         
-        if numberModels.count > 0 {
+        if false { //numberModels.count > 0 {
             completionHandler(numberModels, nil)
         } else {
-            numbersNetworkHelper.getAllNumbers { (numbers, error) in
+            NumbersNetworkHelper().getAllNumbers { (numbers, error) in
                 
                 if let numbers = numbers {
                     CoreDataHelper.sharedInstance.saveAllNumbers(numberModels: numbers)

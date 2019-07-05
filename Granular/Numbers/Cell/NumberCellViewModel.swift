@@ -11,6 +11,7 @@ import UIKit
 class NumberCellViewModel: NSObject {
     
     var numberModel : NumberModel
+    let numbersNetworkHelper = NumbersNetworkHelper()
     
     init(numberModel : NumberModel) {
         self.numberModel = numberModel
@@ -29,18 +30,21 @@ class NumberCellViewModel: NSObject {
             return
         }
         
-        if numberModel.downloadTask == nil || numberModel.downloadTask!.state == .completed {
+        
+        if numberModel.downloadTask == nil || numberModel.downloadTask!.state == .completed || numberModel.downloadTask!.state == .canceling {
             print("Download Task created - ", numberModel.getCompleteURL())
-            numberModel.downloadTask = NumbersNetworkHelper.sharedInstance.getNumberImage(numberModel: numberModel) { (numberModel, error) in
-                print("Download Completed - ", numberModel?.getCompleteURL() ?? "Empty url")
-                completionHandler?(numberModel?.image, numberModel?.getCompleteURL(), nil)
-            }
+            numberModel.downloadTask = numbersNetworkHelper.getNumberImage(numberModel: numberModel)
+        }
+        
+        numbersNetworkHelper.imageDownloadCompletion = { (numberModel, error) in
+            print("Download Completed - ", numberModel?.getCompleteURL() ?? "Empty url")
+            completionHandler?(numberModel?.image, numberModel?.getCompleteURL(), nil)
         }
 
         numberModel.downloadTask?.resume()
     }
     
     func cancelDownload() {
-        numberModel.downloadTask?.suspend()
+        numberModel.downloadTask?.cancel()
     }
 }

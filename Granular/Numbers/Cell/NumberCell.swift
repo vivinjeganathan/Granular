@@ -16,6 +16,7 @@ class NumberCell: UITableViewCell {
         self.numberCellViewModel?.cancelDownload()
         self.imageView?.image = UIImage(named: "placeholder")
         print("cancelled in prepareForReuse - ", numberCellViewModel?.numberModel.getCompleteURL() ?? "Empty url")
+        numberCellViewModel = nil
         super.prepareForReuse()
     }
     

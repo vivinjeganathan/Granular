@@ -12,13 +12,9 @@ import UIKit
 
 class NumbersNetworkHelper: NSObject, URLSessionDelegate {
     
-    static let sharedInstance = NumbersNetworkHelper()
-
     static var allNumbersUrl = "https://raw.githubusercontent.com/granularag/granular_mobile_mock_response/master/list.json" //This has to come from plist/config file
-    
-    private override init() {
-        super.init()
-    }
+    var imageDownloadCompletion: ((NumberModel?, Error?) -> Void)?
+
     
     func getAllNumbers(completionHandler: @escaping (([NumberModel]?, Error?) -> Void)) {
         
@@ -50,7 +46,7 @@ class NumbersNetworkHelper: NSObject, URLSessionDelegate {
         }.resume()
     }
     
-    func getNumberImage(numberModel: NumberModel, completionHandler: @escaping ((NumberModel?, Error?) -> Void)) -> URLSessionDataTask? {
+    func getNumberImage(numberModel: NumberModel) -> URLSessionDataTask? {
         
         guard let url = URL(string: numberModel.getCompleteURL()) else {
             return nil
@@ -58,22 +54,27 @@ class NumbersNetworkHelper: NSObject, URLSessionDelegate {
         
         let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
-        let dataTask = urlSession.dataTask(with: url) { (data, response, error) in
+        let request = URLRequest(url: url)
+
+        let dataTask = urlSession.dataTask(with: request) { [weak self] (data, response, error) in
             
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            
-                if let error = error {
-                    completionHandler(nil, error)
+            if let error = error {
+                if error._code == NSURLErrorCancelled {
                     return
                 }
+                self?.imageDownloadCompletion?(nil, error)
+                return
+            }
+            
+            if let data = data, let response = response {
                 
-                if let data = data {
-                    numberModel.image = UIImage(data: data)
-                    completionHandler(numberModel, nil)
-                } else {
-                    completionHandler(nil, NSError(domain: "Network Error", code: 1, userInfo: [NSLocalizedDescriptionKey : "Data is nil"]))
-                }
-//            }
+                URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: request)
+
+                numberModel.image = UIImage(data: data)
+                self?.imageDownloadCompletion?(numberModel, nil)
+            } else {
+                self?.imageDownloadCompletion?(nil, NSError(domain: "Network Error", code: 1, userInfo: [NSLocalizedDescriptionKey : "Data is nil"]))
+            }
         }
         return dataTask
     }
