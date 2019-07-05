@@ -13,8 +13,10 @@ class NumberCell: UITableViewCell {
     var numberCellViewModel: NumberCellViewModel?
     
     override func prepareForReuse() {
-        super.prepareForReuse()
+        self.numberCellViewModel?.cancelDownload()
         self.imageView?.image = UIImage(named: "placeholder")
+        print("cancelled in prepareForReuse - ", numberCellViewModel?.numberModel.getCompleteURL() ?? "Empty url")
+        super.prepareForReuse()
     }
     
     func configureCell(numberCellViewModel: NumberCellViewModel) {
@@ -28,15 +30,19 @@ class NumberCell: UITableViewCell {
 
     func requestImage() {
         
+        print("Image requested - ", numberCellViewModel?.numberModel.getCompleteURL() ?? "Empty url")
         numberCellViewModel?.getImage { [weak self] (image, url, error) in
             
+            print("Trying to Image set - ", url ?? "Empty url")
             if url == self?.numberCellViewModel?.numberModel.getCompleteURL() {
                 DispatchQueue.main.async {
                     self?.imageView?.image = image
+                    print("Image set - ", url ?? "Empty url")
                 }
             } else {
-                print("Wrong URL", url!)
+                print("Wrong URL", url ?? "Empty url")
             }
         }
     }
 }
+

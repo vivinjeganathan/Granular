@@ -20,6 +20,8 @@ class NumberModel: Codable {
     }
     
     func getCompleteURL() -> String {
+        //"https://cdn.wallpapersafari.com/37/95/P05KU1.jpg"
         return "https://raw.githubusercontent.com/granularag/granular_mobile_mock_response/master/" + (url ?? "")
     }
 }
+
