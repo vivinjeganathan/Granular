@@ -21,24 +21,27 @@ class NumberCellViewModel: NSObject {
         return numberModel.name ?? ""
     }
     
-    func getImage(completionHandler:((UIImage?, String?, Error?) -> Void)?) {
+    func getImage(completionHandler:((UIImage?, String?) -> Void)?) {
         
         if let numberImage = numberModel.image {
             //Cached image is returned
-            print("Image already downloaded - ", numberModel.getCompleteURL())
-            completionHandler?(numberImage, numberModel.getCompleteURL(), nil)
+            completionHandler?(numberImage, numberModel.getCompleteURL())
             return
         }
         
-        
+        //Covering edge cases - needs logic improvisation
         if numberModel.downloadTask == nil || numberModel.downloadTask!.state == .completed || numberModel.downloadTask!.state == .canceling {
-            print("Download Task created - ", numberModel.getCompleteURL())
             numberModel.downloadTask = numbersNetworkHelper.getNumberImage(numberModel: numberModel)
         }
         
-        numbersNetworkHelper.imageDownloadCompletion = { (numberModel, error) in
-            print("Download Completed - ", numberModel?.getCompleteURL() ?? "Empty url")
-            completionHandler?(numberModel?.image, numberModel?.getCompleteURL(), nil)
+        numbersNetworkHelper.imageDownloadCompletion = { [weak self] result in
+            
+            switch result {
+            case .success(let numberModel):
+                completionHandler?(numberModel.image, numberModel.getCompleteURL())
+            case .failure:
+                completionHandler?(nil, self?.numberModel.getCompleteURL())
+            }
         }
 
         numberModel.downloadTask?.resume()

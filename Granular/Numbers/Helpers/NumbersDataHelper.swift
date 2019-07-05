@@ -8,29 +8,33 @@
 
 import UIKit
 
+//This class has the swicth to get the data from Coredata/Network
+
 class NumbersDataHelper: NSObject {
     
     static let sharedInstance = NumbersDataHelper()
-    
     let coreDataHelper = CoreDataHelper.sharedInstance
     
     private override init() {
         super.init()
     }
     
-    func getAllNumbers(completionHandler: @escaping (([NumberModel]?, Error?) -> Void)) {
+    func getAllNumbers(completionHandler: @escaping ((Result<[NumberModel], GranularError>) -> Void)) {
         
         let numberModels = coreDataHelper.retrieveAllNumbers()
         
-        if false { //numberModels.count > 0 {
-            completionHandler(numberModels, nil)
+        if numberModels.count > 0 {
+            completionHandler(.success(numberModels))
         } else {
-            NumbersNetworkHelper().getAllNumbers { (numbers, error) in
+            NumbersNetworkHelper().getAllNumbers { (result) in
                 
-                if let numbers = numbers {
+                switch result {
+                case .success(let numbers):
                     CoreDataHelper.sharedInstance.saveAllNumbers(numberModels: numbers)
+                    completionHandler(.success(numbers))
+                case .failure(let error):
+                    completionHandler(.failure(error))
                 }
-                completionHandler(numbers, error)
             }
         }
     }

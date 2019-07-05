@@ -16,11 +16,13 @@ class NumbersViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        numbersViewModel.getAllNumbers { [weak self] (success) in
+        numbersViewModel.getAllNumbers { [weak self] (success, message) in
             if success {
                 DispatchQueue.main.async {
                     self?.numbersTableView.reloadData()
                 }
+            } else {
+                //Display error alert
             }
         }
     }    
@@ -61,7 +63,6 @@ extension NumbersViewController: UITableViewDataSourcePrefetching {
         
         if let numberCellViewModels = numbersViewModel.getNumberCellViewModels(indexPaths: indexPaths) {
             for numberCellViewModel in numberCellViewModels {
-                print("cancelled - ", numberCellViewModel.numberModel.getCompleteURL())
                 numberCellViewModel.cancelDownload()
             }
         }

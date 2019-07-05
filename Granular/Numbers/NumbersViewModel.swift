@@ -14,18 +14,19 @@ class NumbersViewModel: NSObject {
     var numberCellViewModels: [NumberCellViewModel]?
     
     //Error handling needs to be improvised
-    func getAllNumbers(completionHandler: @escaping ((Bool) -> Void)) {
+    func getAllNumbers(completionHandler: @escaping ((Bool, String) -> Void)) {
         
-        NumbersDataHelper.sharedInstance.getAllNumbers { [weak self] (numbers, error) in
+        NumbersDataHelper.sharedInstance.getAllNumbers { [weak self] (result) in
             
-            if let numbers = numbers {
+            switch result {
                 
+            case .success(let numbers):
                 self?.numberModels = numbers
                 self?.createNumberCellViewModels()
-                completionHandler(true)
-                
-            } else {
-                completionHandler(false)
+                completionHandler(true, "")
+            case .failure:
+                //Message has to come from Localization strings
+                completionHandler(false, "Sorry cannot complete the request at this time. Please try again.")
             }
         }
     }

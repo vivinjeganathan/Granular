@@ -15,7 +15,6 @@ class NumberCell: UITableViewCell {
     override func prepareForReuse() {
         self.numberCellViewModel?.cancelDownload()
         self.imageView?.image = UIImage(named: "placeholder")
-        print("cancelled in prepareForReuse - ", numberCellViewModel?.numberModel.getCompleteURL() ?? "Empty url")
         numberCellViewModel = nil
         super.prepareForReuse()
     }
@@ -31,17 +30,12 @@ class NumberCell: UITableViewCell {
 
     func requestImage() {
         
-        print("Image requested - ", numberCellViewModel?.numberModel.getCompleteURL() ?? "Empty url")
-        numberCellViewModel?.getImage { [weak self] (image, url, error) in
+        numberCellViewModel?.getImage { [weak self] (image, url) in
             
-            print("Trying to Image set - ", url ?? "Empty url")
             if url == self?.numberCellViewModel?.numberModel.getCompleteURL() {
                 DispatchQueue.main.async {
                     self?.imageView?.image = image
-                    print("Image set - ", url ?? "Empty url")
                 }
-            } else {
-                print("Wrong URL", url ?? "Empty url")
             }
         }
     }

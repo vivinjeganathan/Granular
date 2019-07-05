@@ -12,13 +12,13 @@ import CoreData
 class CoreDataHelper: NSObject {
     
     static let sharedInstance = CoreDataHelper()
-    
     let viewContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     private override init() {
         super.init()
     }
     
+    //Error handing needs to be improvised
     func saveAllNumbers(numberModels: [NumberModel]) {
         
         guard let entity = NSEntityDescription.entity(forEntityName: "Number", in: viewContext) else {
